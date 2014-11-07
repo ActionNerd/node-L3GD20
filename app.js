@@ -5,7 +5,6 @@ var wire = new i2c(address, {device: '/dev/i2c-1', debug: true}); // point to yo
 
 wire.scan(function(err, data) {
         console.log(data);
-  // result contains an array of addresses (in decimal format)
 });
 
 //wire.writeByte(byte, function(err) {});
@@ -49,16 +48,25 @@ var gyro = new Adafruit_L3GD20();
 
 function printReg(gyroSub) {
         for (var key in gyroSub.addressObj) {
-                wire.readBytes(gyroSub.addressObj[key], 10, function(err, res) {
-                        console.log((gyroSub.addressObj[key]).toString(16), res[0]);
-                        // result contains a buffer of bytes
+                wire.readBytes(gyroSub.addressObj[key], 30, function(err, res) {
+			if ((gyroSub.addressObj[key]).toString(16) == '28') {
+				var buffAverage = 0;
+				for (var i = 0; i < 29; i++) {
+					buffAverage = buffAverage + res[i];
+				}
+				//console.log(res, res[29]);
+			//console.log(buffAverage / 30)
+			//console.log((gyroSub.addressObj[key]).toString(16), res, buffAverage / 30)
+			}
+                        console.log((gyroSub.addressObj[key]).toString(16), res);
+                        //console.log((gyroSub.addressObj[key]).toString(16), res + " : " + buffAverage / 30)
                 });
         }
 }
 
 printReg(gyro);
 
-console.log("Now putting the device into normal mode...");
+// console.log("Now putting the device into normal mode...");
 
 // Turn on normal OPS:
 wire.writeBytes(0x20, [0x0F], function(err) {
@@ -90,11 +98,6 @@ wire.writeBytes(0x2E, [0x00], function(err) {
         }
 });
 
-
-
-
-
-
 var intCounter = 0;
 
 var intObj = setInterval(function() {
@@ -103,6 +106,6 @@ var intObj = setInterval(function() {
         if (intCounter == 50) {
                 clearInterval(intObj)
         }
-}, 1000);
+}, 100);
 
 
